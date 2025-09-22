@@ -2,16 +2,14 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8">
-      <h1 className="text-4xl font-bold mb-8">Home Page</h1>
-      <nav className="flex gap-4">
-        <Link href="/" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-          Home
+    <div className="min-h-screen">
+      <h1 className="text-4xl font-bold p-8 text-center">react play app</h1>
+
+      <div className="flex items-center justify-center min-h-[calc(100vh-120px)]">
+        <Link href="/uploads" className="px-6 py-3 text-green-400 border border-white rounded hover:text-green-300">
+          Upload a File
         </Link>
-        <Link href="/uploads" className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-          Uploads
-        </Link>
-      </nav>
+      </div>
     </div>
   );
 }
