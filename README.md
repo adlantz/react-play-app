@@ -6,6 +6,7 @@ A React + Next.js app with a FastAPI backend. It allows users to upload and stor
 
 ### Frontend
 ```bash
+cd frontend
 npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000)
