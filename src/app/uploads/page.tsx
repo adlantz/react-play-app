@@ -16,7 +16,10 @@ export default function Uploads() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<FileData[]>([]);
   const [hoveredFile, setHoveredFile] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'name' | 'time'>('time');
+  const [uploading, setUploading] = useState(false);
+  const [uploadingFileName, setUploadingFileName] = useState('');
+  const [progress, setProgress] = useState(0);
+
 
   const getAuthToken = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -52,6 +55,18 @@ export default function Uploads() {
     const token = await getAuthToken();
     if (!token) return;
 
+    setUploading(true);
+    setUploadingFileName(file.name);
+    setProgress(0);
+
+    // Simulate progress
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 90) return prev;
+        return prev + Math.random() * 20;
+      });
+    }, 100);
+
     const formData = new FormData();
     formData.append('file', file);
 
@@ -65,11 +80,18 @@ export default function Uploads() {
       });
       const result = await response.json();
       console.log('Upload successful:', result);
-      fetchFiles();
+      setProgress(100);
+      setTimeout(() => {
+        setUploading(false);
+        fetchFiles();
+      }, 200);
     } catch (error) {
       console.error('Upload failed:', error);
+      setUploading(false);
     }
-    
+
+    clearInterval(progressInterval);
+
     // Clear the input value to allow re-uploading the same file
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -95,14 +117,6 @@ export default function Uploads() {
     }
   };
 
-  const sortedFiles = [...files].sort((a, b) => {
-    if (sortBy === 'name') {
-      return a.filename.localeCompare(b.filename);
-    } else {
-      return new Date(b.uploaded_time).getTime() - new Date(a.uploaded_time).getTime();
-    }
-  });
-
   return (
     <div className="min-h-screen">
       <Link href="/" className="fixed top-4 left-4 text-xl hover:text-gray-600">
@@ -111,27 +125,13 @@ export default function Uploads() {
 
       <div className="flex items-center justify-center min-h-screen p-8">
         <div className="w-96 h-96 border border-white rounded px-4 pt-2 pb-4 overflow-y-auto">
-          <div className="flex gap-2 mb-2 text-xs">
-            <button
-              onClick={() => setSortBy('time')}
-              className={`px-2 py-1 rounded ${sortBy === 'time' ? 'bg-white text-black' : 'text-gray-400'}`}
-            >
-              Time
-            </button>
-            <button
-              onClick={() => setSortBy('name')}
-              className={`px-2 py-1 rounded ${sortBy === 'name' ? 'bg-white text-black' : 'text-gray-400'}`}
-            >
-              Name
-            </button>
-          </div>
           <input
             type="file"
             ref={fileInputRef}
             onChange={handleFileUpload}
             className="hidden"
           />
-          {sortedFiles.map((file, index) => (
+          {files.map((file, index) => (
             <div
               key={index}
               className="py-1 text-sm flex justify-between items-center"
@@ -151,6 +151,15 @@ export default function Uploads() {
               )}
             </div>
           ))}
+          {uploading && (
+            <div className="py-1 text-sm">
+              <div className="font-mono text-xs">
+                {"█".repeat(Math.max(0, Math.min(20, Math.floor(progress / 5))))}
+                {"░".repeat(Math.max(0, 20 - Math.floor(progress / 5)))}
+                {" "}{Math.floor(progress)}%
+              </div>
+            </div>
+          )}
           <div
             className="py-1 text-2xl cursor-pointer hover:text-gray-400"
             onClick={() => fileInputRef.current?.click()}
